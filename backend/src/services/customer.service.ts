@@ -1,6 +1,7 @@
 import { DEFAULT_AVATAR } from "../models/admin.model.js";
 import { CustomerStatus, ICustomer } from "../models/customer.model.js";
 import { CustomerRepository } from "../repositories/customer.repository.js";
+import { EmailService } from "./email.service.js";
 import { AppError } from "../utils/appError.js";
 import { formatPaginatedMeta, getPaginationOptions, PaginationQuery } from "../utils/pagination.js";
 
@@ -10,9 +11,11 @@ export interface CustomerFilterQuery extends PaginationQuery {
 
 export class CustomerService {
     private customerRepository: CustomerRepository;
+    private emailService: EmailService;
 
     constructor() {
         this.customerRepository = new CustomerRepository();
+        this.emailService = new EmailService();
     }
 
     async createCustomer(data: {
@@ -39,7 +42,17 @@ export class CustomerService {
             status: data.status || CustomerStatus.ACTIVE,
         };
 
-        return await this.customerRepository.create(customerPayload);
+        const newCustomer = await this.customerRepository.create(customerPayload);
+
+        // Trigger welcome email with HTML template
+        this.emailService.sendCustomerCreatedEmail({
+            name: `${data.firstName} ${data.lastName}`.trim(),
+            email: data.email,
+            phone: data.phone,
+            countryCode: data.countryCode || "+965",
+        }).catch((err) => console.error("Failed to send customer created email:", err));
+
+        return newCustomer;
     }
 
     async getCustomerById(id: string): Promise<ICustomer> {

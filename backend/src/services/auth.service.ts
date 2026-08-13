@@ -1,5 +1,6 @@
 import { IRole } from "../models/role.model.js";
 import { AdminRepository } from "../repositories/admin.repository.js";
+import { EmailService } from "./email.service.js";
 import { AppError } from "../utils/appError.js";
 import {
     generateAccessToken,
@@ -12,9 +13,11 @@ import { comparePassword, hashPassword } from "../utils/password.js";
 
 export class AuthService {
     private adminRepository: AdminRepository;
+    private emailService: EmailService;
 
     constructor() {
         this.adminRepository = new AdminRepository();
+        this.emailService = new EmailService();
     }
 
     async login(
@@ -118,6 +121,13 @@ export class AuthService {
             hashedToken,
             expiresAt,
         );
+
+        // Send HTML password reset email
+        this.emailService.sendPasswordResetEmail({
+            name: admin.name,
+            email: admin.email,
+            resetToken,
+        }).catch((err) => console.error("Failed to send password reset email:", err));
 
         return { resetToken };
     }

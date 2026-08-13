@@ -1,5 +1,4 @@
 import "dotenv/config";
-
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -45,6 +44,14 @@ const envSchema = z.object({
     SUB_ADMIN_NAME: z.string().default("Sub Admin"),
     SUB_ADMIN_EMAIL: z.string().email().default("subadmin@admin.com"),
     SUB_ADMIN_PASSWORD: z.string().min(8).default("SubAdmin@123"),
+
+    // SMTP Configuration
+    SMTP_HOST: z.string().optional().default("smtp.gmail.com"),
+    SMTP_PORT: z.coerce.number().optional().default(587),
+    SMTP_USER: z.string().optional().default(""),
+    SMTP_PASS: z.string().optional().default(""),
+    SMTP_FROM_NAME: z.string().optional().default("Admin Panel Support"),
+    SMTP_FROM_EMAIL: z.string().optional().default(""),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

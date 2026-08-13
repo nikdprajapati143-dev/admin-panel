@@ -12,7 +12,8 @@ export const createAdminSchema = z.object({
             .regex(
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
                 "Password must contain uppercase, lowercase, number and special character",
-            ),
+            )
+            .optional(),
         role: objectIdSchema,
         avatar: z.string().optional(),
         status: z.nativeEnum(AdminStatus).optional(),

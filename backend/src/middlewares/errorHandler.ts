@@ -2,6 +2,7 @@ import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/appError.js";
+import { logError } from "../utils/logger.js";
 
 interface MongoError extends Error {
     code?: number;
@@ -10,7 +11,7 @@ interface MongoError extends Error {
 
 export const errorHandler: ErrorRequestHandler = (
     err: Error,
-    _req: Request,
+    req: Request,
     res: Response,
     _next: NextFunction,
 ): void => {
@@ -50,6 +51,14 @@ export const errorHandler: ErrorRequestHandler = (
         message = err.message || "Internal Server Error";
     }
 
+    // Always log error to backend/logs/error.log
+    logError(`[API ERROR] ${req.method} ${req.originalUrl}`, {
+        statusCode,
+        message,
+        errors,
+        stack: env.NODE_ENV === "development" ? err.stack : undefined,
+    });
+
     const response: Record<string, unknown> = {
         success: false,
         statusCode,
@@ -58,10 +67,6 @@ export const errorHandler: ErrorRequestHandler = (
 
     if (errors !== undefined) {
         response.errors = errors;
-    }
-
-    if (env.NODE_ENV === "development") {
-        //response.stack = err.stack;
     }
 
     res.status(statusCode).json(response);
