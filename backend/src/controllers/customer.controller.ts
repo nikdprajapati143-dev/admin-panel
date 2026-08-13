@@ -37,6 +37,13 @@ export class CustomerController {
         successResponse(res, "Customer updated successfully", CustomerTransformer.transform(updatedCustomer));
     });
 
+    updateCustomerStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const id = req.params.id as string;
+        const { status } = req.body;
+        const updatedCustomer = await customerService.updateCustomerStatus(id, status);
+        successResponse(res, `Customer status updated to ${status} successfully`, CustomerTransformer.transform(updatedCustomer));
+    });
+
     deleteCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id as string;
         await customerService.softDeleteCustomer(id);

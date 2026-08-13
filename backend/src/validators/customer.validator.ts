@@ -48,6 +48,15 @@ export const updateCustomerSchema = z.object({
     }),
 });
 
+export const updateCustomerStatusSchema = z.object({
+    params: z.object({
+        id: objectIdSchema,
+    }),
+    body: z.object({
+        status: z.nativeEnum(CustomerStatus),
+    }),
+});
+
 export const customerQuerySchema = z.object({
     query: z.object({
         page: z.string().optional(),

@@ -175,6 +175,18 @@ export class AdminService {
         return updated;
     }
 
+    async updateAdminStatus(
+        id: string,
+        status: AdminStatus,
+        currentAdminId: string,
+        currentUserRoleName: string,
+    ): Promise<IAdmin> {
+        if (id === currentAdminId && status === AdminStatus.INACTIVE) {
+            throw new AppError("You cannot deactivate your own account", 400);
+        }
+        return this.updateAdmin(id, { status }, currentUserRoleName);
+    }
+
     async softDeleteAdmin(
         id: string,
         currentAdminId: string,

@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+
 export const apiClient = axios.create({
-    baseURL: "http://localhost:5000/api/v1",
+    baseURL: API_BASE_URL,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -64,7 +66,7 @@ apiClient.interceptors.response.use(
             try {
                 // Attempt to refresh token via httpOnly cookie or body
                 const refreshRes = await axios.post(
-                    "http://localhost:5000/api/v1/admin/auth/refresh",
+                    `${API_BASE_URL}/admin/auth/refresh`,
                     {},
                     { withCredentials: true }
                 );

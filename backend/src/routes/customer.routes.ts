@@ -10,6 +10,7 @@ import {
     createCustomerSchema,
     customerQuerySchema,
     updateCustomerSchema,
+    updateCustomerStatusSchema,
 } from "../validators/customer.validator.js";
 
 const router = Router();
@@ -46,6 +47,14 @@ router.put(
     uploadSingleImage,
     validate(updateCustomerSchema),
     customerController.updateCustomer,
+);
+
+// Dedicated Customer Status Update API Route
+router.patch(
+    "/customers/:id/status",
+    authorizePermissions(PERMISSIONS.CUSTOMER_EDIT),
+    validate(updateCustomerStatusSchema),
+    customerController.updateCustomerStatus,
 );
 
 router.delete(

@@ -128,6 +128,10 @@ export class CustomerService {
         return updatedCustomer;
     }
 
+    async updateCustomerStatus(id: string, status: CustomerStatus): Promise<ICustomer> {
+        return this.updateCustomer(id, { status });
+    }
+
     async softDeleteCustomer(id: string): Promise<void> {
         const customer = await this.customerRepository.findById(id);
         if (!customer) {

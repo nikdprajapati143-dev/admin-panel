@@ -111,12 +111,12 @@ export const CustomerListPage: React.FC = () => {
         );
     };
 
-    // Direct Toggle Customer Status Mutation with Toaster Toast Messages
+    // Direct Toggle Customer Status Mutation calling dedicated PATCH /admin/customers/:id/status API
     const toggleStatusMutation = useMutation({
         mutationFn: async ({ id, newStatus }: { id: string; newStatus: "ACTIVE" | "INACTIVE" }) => {
-            const formData = new FormData();
-            formData.append("status", newStatus);
-            const res = await apiClient.put<ApiResponse>(`/admin/customers/${id}`, formData);
+            const res = await apiClient.patch<ApiResponse>(`/admin/customers/${id}/status`, {
+                status: newStatus,
+            });
             return res.data;
         },
         onSuccess: (_, variables) => {

@@ -127,6 +127,7 @@ export const ProfilePage: React.FC = () => {
                 {
                     currentPassword: data.currentPassword,
                     newPassword: data.newPassword,
+                    confirmPassword: data.confirmPassword,
                 },
             );
 

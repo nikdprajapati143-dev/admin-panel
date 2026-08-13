@@ -24,9 +24,9 @@ export const resetPasswordSchema = z.object({
                     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
                     "Password must contain uppercase, lowercase, number and special character",
                 ),
-            confirmPassword: z.string().min(1, "Confirm password is required"),
+            confirmPassword: z.string().min(1, "Confirm password is required").optional(),
         })
-        .refine((data) => data.password === data.confirmPassword, {
+        .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
             message: "Passwords do not match",
             path: ["confirmPassword"],
         }),
@@ -43,9 +43,9 @@ export const changePasswordSchema = z.object({
                     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
                     "New password must contain uppercase, lowercase, number and special character",
                 ),
-            confirmPassword: z.string().min(1, "Confirm password is required"),
+            confirmPassword: z.string().min(1, "Confirm password is required").optional(),
         })
-        .refine((data) => data.newPassword === data.confirmPassword, {
+        .refine((data) => !data.confirmPassword || data.newPassword === data.confirmPassword, {
             message: "Passwords do not match",
             path: ["confirmPassword"],
         }),

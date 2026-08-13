@@ -114,12 +114,12 @@ export const AdminListPage: React.FC = () => {
         );
     };
 
-    // Direct Toggle Admin Status Mutation with Toaster Toast Messages
+    // Direct Toggle Admin Status Mutation calling dedicated PATCH /admin/admins/:id/status API
     const toggleStatusMutation = useMutation({
         mutationFn: async ({ id, newStatus }: { id: string; newStatus: "ACTIVE" | "INACTIVE" }) => {
-            const formData = new FormData();
-            formData.append("status", newStatus);
-            const res = await apiClient.put<ApiResponse>(`/admin/admins/${id}`, formData);
+            const res = await apiClient.patch<ApiResponse>(`/admin/admins/${id}/status`, {
+                status: newStatus,
+            });
             return res.data;
         },
         onSuccess: (_, variables) => {

@@ -1,4 +1,5 @@
 import { renderEmailLayout } from "./layout.js";
+import { env } from "../../config/env.js";
 
 export interface PasswordResetEmailData {
     name?: string;
@@ -11,12 +12,12 @@ export function getPasswordResetEmail(data: PasswordResetEmailData): string {
     const {
         name = "User",
         resetToken,
-        resetUrl = `http://localhost:5173/admin/reset-password?token=${encodeURIComponent(resetToken)}`,
+        resetUrl = `${env.FRONTEND_URL}/admin/reset-password?token=${encodeURIComponent(resetToken)}`,
         expiresInMinutes = 15,
     } = data;
 
     const contentHtml = `
-    <!-- Header Title & Greeting (Matching Screenshots 1 & 2) -->
+    <!-- Header Title & Greeting -->
     <div style="text-align: left; margin-bottom: 24px;">
       <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #1E293B; font-size: 24px; font-weight: 700; margin: 0 0 12px 0;">
         Hello ${name},
@@ -47,7 +48,7 @@ export function getPasswordResetEmail(data: PasswordResetEmailData): string {
       <span style="color: #164E50;">Admin Portal Team</span>
     </div>
 
-    <!-- Fallback Direct Link Section (Matching Screenshots 1 & 2) -->
+    <!-- Fallback Direct Link Section -->
     <div style="border-top: 1px dashed #E5E0D8; padding-top: 20px;">
       <p style="font-size: 12px; color: #64748B; margin: 0 0 8px 0;">
         If you're having trouble clicking the <strong>"Reset Password"</strong> button above, copy and paste the URL below into your web browser:

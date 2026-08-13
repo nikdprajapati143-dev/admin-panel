@@ -1,6 +1,9 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const defaultStr = (fallback: string) =>
+    z.preprocess((val) => (typeof val === "string" && val.trim() !== "" ? val : fallback), z.string());
+
 const envSchema = z.object({
     NODE_ENV: z
         .enum(["development", "test", "production"])
@@ -37,13 +40,13 @@ const envSchema = z.object({
         .string()
         .min(1, "JWT_REFRESH_EXPIRES_IN is required"),
 
-    SUPER_ADMIN_NAME: z.string().default("Super Admin"),
-    SUPER_ADMIN_EMAIL: z.string().email().default("superadmin@admin.com"),
-    SUPER_ADMIN_PASSWORD: z.string().min(8).default("SuperAdmin@123"),
+    SUPER_ADMIN_NAME: defaultStr("Super Admin"),
+    SUPER_ADMIN_EMAIL: defaultStr("superadmin@admin.com"),
+    SUPER_ADMIN_PASSWORD: defaultStr("SuperAdmin@123"),
 
-    SUB_ADMIN_NAME: z.string().default("Sub Admin"),
-    SUB_ADMIN_EMAIL: z.string().email().default("subadmin@admin.com"),
-    SUB_ADMIN_PASSWORD: z.string().min(8).default("SubAdmin@123"),
+    SUB_ADMIN_NAME: defaultStr("Sub Admin"),
+    SUB_ADMIN_EMAIL: defaultStr("subadmin@admin.com"),
+    SUB_ADMIN_PASSWORD: defaultStr("SubAdmin@123"),
 
     // SMTP Configuration
     SMTP_HOST: z.string().optional().default("smtp.gmail.com"),
@@ -58,11 +61,7 @@ const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
     console.error(" Invalid environment variables:");
-
-    console.error(
-        z.prettifyError(parsedEnv.error),
-    );
-
+    console.error(z.prettifyError(parsedEnv.error));
     process.exit(1);
 }
 

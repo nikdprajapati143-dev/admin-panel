@@ -33,6 +33,15 @@ export const updateAdminSchema = z.object({
     }),
 });
 
+export const updateAdminStatusSchema = z.object({
+    params: z.object({
+        id: objectIdSchema,
+    }),
+    body: z.object({
+        status: z.nativeEnum(AdminStatus),
+    }),
+});
+
 export const updateProfileSchema = z.object({
     body: z.object({
         name: z.string().min(2, "Name must be at least 2 characters").trim().optional(),

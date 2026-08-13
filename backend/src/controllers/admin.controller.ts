@@ -48,6 +48,15 @@ export class AdminController {
         successResponse(res, "Admin updated successfully", AdminTransformer.transform(updatedAdmin));
     });
 
+    updateAdminStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const id = req.params.id as string;
+        const { status } = req.body;
+        const currentAdminId = req.user!._id.toString();
+        const currentUserRoleName = req.user!.role.name;
+        const updatedAdmin = await adminService.updateAdminStatus(id, status, currentAdminId, currentUserRoleName);
+        successResponse(res, `Admin status updated to ${status} successfully`, AdminTransformer.transform(updatedAdmin));
+    });
+
     deleteAdmin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id as string;
         const currentAdminId = req.user!._id.toString();

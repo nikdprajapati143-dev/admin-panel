@@ -17,7 +17,7 @@ export const getAvatarUrl = (avatar?: string | null): string => {
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
     if (!avatar) return defaultAvatar;
     if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
-    const backendHost = "http://localhost:5000";
+    const backendHost = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
     return `${backendHost}${avatar.startsWith("/") ? "" : "/"}${avatar}`;
 };
 

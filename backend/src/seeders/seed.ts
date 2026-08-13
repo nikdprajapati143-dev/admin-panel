@@ -9,6 +9,15 @@ export const seedDatabase = async (): Promise<void> => {
         console.log(" Starting database seeding...");
         await connectDatabase();
 
+        // Fallback default values if env variables are blank
+        const superAdminName = env.SUPER_ADMIN_NAME || "Super Admin";
+        const superAdminEmail = (env.SUPER_ADMIN_EMAIL || "superadmin@admin.com").toLowerCase();
+        const superAdminPassword = env.SUPER_ADMIN_PASSWORD || "SuperAdmin@123";
+
+        const subAdminName = env.SUB_ADMIN_NAME || "Sub Admin";
+        const subAdminEmail = (env.SUB_ADMIN_EMAIL || "subadmin@admin.com").toLowerCase();
+        const subAdminPassword = env.SUB_ADMIN_PASSWORD || "SubAdmin@123";
+
         // 1. Seed SUPER_ADMIN Role
         let superAdminRole = await Role.findOne({ name: "SUPER_ADMIN", isDeleted: false });
 
@@ -49,13 +58,12 @@ export const seedDatabase = async (): Promise<void> => {
         }
 
         // 3. Seed Super Admin User
-        const superAdminEmail = env.SUPER_ADMIN_EMAIL.toLowerCase();
         let superAdminUser = await Admin.findOne({ email: superAdminEmail, isDeleted: false });
 
         if (!superAdminUser) {
-            const hashedPassword = await hashPassword(env.SUPER_ADMIN_PASSWORD);
+            const hashedPassword = await hashPassword(superAdminPassword);
             superAdminUser = await Admin.create({
-                name: env.SUPER_ADMIN_NAME,
+                name: superAdminName,
                 email: superAdminEmail,
                 password: hashedPassword,
                 role: superAdminRole._id,
@@ -67,13 +75,12 @@ export const seedDatabase = async (): Promise<void> => {
         }
 
         // 4. Seed Sub Admin User
-        const subAdminEmail = env.SUB_ADMIN_EMAIL.toLowerCase();
         let subAdminUser = await Admin.findOne({ email: subAdminEmail, isDeleted: false });
 
         if (!subAdminUser) {
-            const hashedPassword = await hashPassword(env.SUB_ADMIN_PASSWORD);
+            const hashedPassword = await hashPassword(subAdminPassword);
             subAdminUser = await Admin.create({
-                name: env.SUB_ADMIN_NAME,
+                name: subAdminName,
                 email: subAdminEmail,
                 password: hashedPassword,
                 role: subAdminRole._id,

@@ -23,6 +23,7 @@ import { ProfilePage } from "./pages/profile/ProfilePage.js";
 import { RoleListPage } from "./pages/roles/RoleListPage.js";
 import { RoleCreatePage } from "./pages/roles/RoleCreatePage.js";
 import { RoleEditPage } from "./pages/roles/RoleEditPage.js";
+import { NotFoundPage } from "./pages/common/NotFoundPage.js";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -37,12 +38,16 @@ function App() {
     return (
         <ThemeProvider>
             <QueryClientProvider client={queryClient}>
-                <Toaster position="top-right" richColors />
+                <Toaster position="top-right" richColors closeButton />
                 <BrowserRouter>
                     <Routes>
+                        {/* Root Redirect to Dashboard / Login */}
+                        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+
                         {/* Public Auth Routes Container */}
                         <Route element={<PublicRoute />}>
                             <Route path="/admin" element={<AuthLayout />}>
+                                <Route index element={<Navigate to="login" replace />} />
                                 <Route path="login" element={<LoginPage />} />
                                 <Route path="forgot-password" element={<ForgotPasswordPage />} />
                                 <Route path="reset-password" element={<ResetPasswordPage />} />
@@ -69,8 +74,8 @@ function App() {
                             </Route>
                         </Route>
 
-                        {/* Default Redirect */}
-                        <Route path="*" element={<Navigate to="/admin/login" replace />} />
+                        {/* Custom 404 Page for Unmatched Routes */}
+                        <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                 </BrowserRouter>
             </QueryClientProvider>

@@ -1,4 +1,5 @@
 import { renderEmailLayout } from "./layout.js";
+import { env } from "../../config/env.js";
 
 export interface AdminCreatedEmailData {
     name: string;
@@ -13,7 +14,7 @@ export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
         name,
         email,
         temporaryPassword = "GeneratedAtCreation",
-        loginUrl = "http://localhost:5173/admin/login",
+        loginUrl = `${env.FRONTEND_URL}/admin/login`,
     } = data;
 
     const contentHtml = `
@@ -30,7 +31,7 @@ export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
       </p>
     </div>
 
-    <!-- Login Credentials Box (Matching Screenshot 3) -->
+    <!-- Login Credentials Box -->
     <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: left;">
       <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748B; font-weight: 700; text-align: center; margin-bottom: 20px;">
         YOUR LOGIN CREDENTIALS
@@ -51,14 +52,14 @@ export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
       </div>
     </div>
 
-    <!-- Yellow Security Reminder Banner (Matching Screenshot 3) -->
+    <!-- Yellow Security Reminder Banner -->
     <div style="background-color: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 12px 16px; margin-bottom: 28px; text-align: left;">
       <p style="font-size: 12px; color: #92400E; margin: 0; font-weight: 600;">
         🔒 <strong>Security Reminder:</strong> For your security, please change your password after your first login.
       </p>
     </div>
 
-    <!-- Dark Teal CTA Button (Matching Screenshot 3) -->
+    <!-- Dark Teal CTA Button -->
     <div style="text-align: center; margin-bottom: 32px;">
       <a href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #164E50; color: #ffffff !important; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 36px; border-radius: 8px; box-shadow: 0 4px 10px rgba(22, 78, 80, 0.25);">
         Login to Your Dashboard &rarr;

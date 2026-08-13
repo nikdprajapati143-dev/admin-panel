@@ -8,6 +8,7 @@ import { validate } from "../middlewares/validate.js";
 import {
     createAdminSchema,
     updateAdminSchema,
+    updateAdminStatusSchema,
 } from "../validators/admin.validator.js";
 import { idParamSchema, paginationQuerySchema } from "../validators/common.validator.js";
 
@@ -45,6 +46,14 @@ router.put(
     uploadSingleImage,
     validate(updateAdminSchema),
     adminController.updateAdmin,
+);
+
+// Dedicated Status Update API Route
+router.patch(
+    "/admins/:id/status",
+    authorizePermissions(PERMISSIONS.ADMIN_EDIT),
+    validate(updateAdminStatusSchema),
+    adminController.updateAdminStatus,
 );
 
 router.delete(

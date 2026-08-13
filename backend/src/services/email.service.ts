@@ -76,7 +76,8 @@ export class EmailService {
     }
 
     async sendAdminCreatedEmail(data: AdminCreatedEmailData): Promise<boolean> {
-        const html = getAdminCreatedEmail(data);
+        const loginUrl = data.loginUrl || `${env.FRONTEND_URL}/admin/login`;
+        const html = getAdminCreatedEmail({ ...data, loginUrl });
         const subject = "Welcome to Admin Portal - Your Account Credentials";
         return await this.sendMail(data.email, subject, html);
     }
@@ -88,7 +89,8 @@ export class EmailService {
     }
 
     async sendPasswordResetEmail(data: PasswordResetEmailData & { email: string }): Promise<boolean> {
-        const html = getPasswordResetEmail(data);
+        const resetUrl = data.resetUrl || `${env.FRONTEND_URL}/admin/reset-password?token=${encodeURIComponent(data.resetToken)}`;
+        const html = getPasswordResetEmail({ ...data, resetUrl });
         const subject = "Password Reset Request - Admin Portal";
         return await this.sendMail(data.email, subject, html);
     }
