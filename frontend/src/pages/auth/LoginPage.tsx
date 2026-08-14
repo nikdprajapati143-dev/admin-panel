@@ -64,8 +64,8 @@ export const LoginPage: React.FC = () => {
                     to="/"
                     className="inline-flex items-center gap-2 text-xs font-semibold text-[#64748B] hover:text-[#164E50] transition"
                 >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Back to home</span>
+                    {/* <ArrowLeft className="w-3.5 h-3.5" /> */}
+                    {/* <span>Back to home</span> */}
                 </Link>
             </div>
 
@@ -94,9 +94,8 @@ export const LoginPage: React.FC = () => {
                             type="email"
                             placeholder="admin@example.com"
                             {...register("email")}
-                            className={`w-full pl-10 pr-4 py-3 bg-white border ${
-                                errors.email ? "border-red-500 focus:ring-red-500" : "border-[#E5E0D8] focus:border-[#164E50] focus:ring-[#164E50]"
-                            } rounded-2xl text-sm text-[#1E293B] placeholder-[#64748B]/60 focus:outline-hidden focus:ring-1 transition shadow-2xs`}
+                            className={`w-full pl-10 pr-4 py-3 bg-white border ${errors.email ? "border-red-500 focus:ring-red-500" : "border-[#E5E0D8] focus:border-[#164E50] focus:ring-[#164E50]"
+                                } rounded-2xl text-sm text-[#1E293B] placeholder-[#64748B]/60 focus:outline-hidden focus:ring-1 transition shadow-2xs`}
                         />
                     </div>
                     {errors.email && (
@@ -117,9 +116,8 @@ export const LoginPage: React.FC = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             {...register("password")}
-                            className={`w-full pl-10 pr-11 py-3 bg-white border ${
-                                errors.password ? "border-red-500 focus:ring-red-500" : "border-[#E5E0D8] focus:border-[#164E50] focus:ring-[#164E50]"
-                            } rounded-2xl text-sm text-[#1E293B] placeholder-[#64748B]/60 focus:outline-hidden focus:ring-1 transition shadow-2xs`}
+                            className={`w-full pl-10 pr-11 py-3 bg-white border ${errors.password ? "border-red-500 focus:ring-red-500" : "border-[#E5E0D8] focus:border-[#164E50] focus:ring-[#164E50]"
+                                } rounded-2xl text-sm text-[#1E293B] placeholder-[#64748B]/60 focus:outline-hidden focus:ring-1 transition shadow-2xs`}
                         />
                         <button
                             type="button"

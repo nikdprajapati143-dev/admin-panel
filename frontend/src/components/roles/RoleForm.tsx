@@ -15,38 +15,6 @@ interface RoleFormProps {
     onCancel: () => void;
 }
 
-const DEFAULT_FALLBACK_PERMISSIONS = [
-    {
-        group: "Admin Management",
-        items: [
-            { key: "admin:create", label: "Create Admins" },
-            { key: "admin:edit", label: "Edit Admins" },
-            { key: "admin:delete", label: "Delete Admins" },
-            { key: "admin:read", label: "View Admins" },
-            { key: "admin:list", label: "List Admins" },
-        ],
-    },
-    {
-        group: "Customer Management",
-        items: [
-            { key: "customer:create", label: "Create Customers" },
-            { key: "customer:edit", label: "Edit Customers" },
-            { key: "customer:delete", label: "Delete Customers" },
-            { key: "customer:read", label: "View Customers" },
-            { key: "customer:list", label: "List Customers" },
-        ],
-    },
-    {
-        group: "Role Management",
-        items: [
-            { key: "role:create", label: "Create Roles" },
-            { key: "role:edit", label: "Edit Roles" },
-            { key: "role:delete", label: "Delete Roles" },
-            { key: "role:list", label: "List Roles" },
-        ],
-    },
-];
-
 export const RoleForm: React.FC<RoleFormProps> = ({
     initialData,
     isLoading = false,
@@ -55,7 +23,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
 }) => {
     const isEdit = Boolean(initialData);
 
-    // Fetch dynamic permissions list from backend DB
+    // Dynamically fetch system permissions list directly from backend MongoDB
     const { data: fetchedPermissionsData, isLoading: isPermissionsLoading } = useQuery({
         queryKey: ["permissions-list"],
         queryFn: async () => {
@@ -64,10 +32,11 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         },
     });
 
+    // Dynamically construct permission groups for any existing or new modules
     const permissionGroups = useMemo(() => {
         const grouped = fetchedPermissionsData?.data?.grouped;
         if (!grouped || Object.keys(grouped).length === 0) {
-            return DEFAULT_FALLBACK_PERMISSIONS;
+            return [];
         }
 
         return Object.entries(grouped)
@@ -108,7 +77,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
             reset({
                 name: "",
                 description: "",
-                permissions: ["customer:read", "customer:list", "admin:read", "admin:list", "role:list"],
+                permissions: [],
             });
         }
     }, [initialData, reset]);

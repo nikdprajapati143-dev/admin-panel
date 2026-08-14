@@ -1,25 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { PERMISSION_ALIASES } from "../constants/permissions.js";
 import { AppError } from "../utils/appError.js";
-
-const PERMISSION_ALIASES: Record<string, string[]> = {
-    "admin:read": ["admin:read", "ADMIN_VIEW"],
-    "admin:list": ["admin:list", "ADMIN_LIST"],
-    "admin:create": ["admin:create", "ADMIN_CREATE"],
-    "admin:edit": ["admin:edit", "ADMIN_EDIT"],
-    "admin:delete": ["admin:delete", "ADMIN_DELETE"],
-
-    "role:read": ["role:read", "ROLE_VIEW"],
-    "role:list": ["role:list", "ROLE_LIST"],
-    "role:create": ["role:create", "ROLE_CREATE"],
-    "role:edit": ["role:edit", "ROLE_EDIT"],
-    "role:delete": ["role:delete", "ROLE_DELETE"],
-
-    "customer:read": ["customer:read", "CUSTOMER_VIEW"],
-    "customer:list": ["customer:list", "CUSTOMER_LIST"],
-    "customer:create": ["customer:create", "CUSTOMER_CREATE"],
-    "customer:edit": ["customer:edit", "CUSTOMER_EDIT"],
-    "customer:delete": ["customer:delete", "CUSTOMER_DELETE"],
-};
 
 const hasPermissionMatch = (userPermissions: string[], requiredPerm: string): boolean => {
     if (userPermissions.includes("*")) return true;
