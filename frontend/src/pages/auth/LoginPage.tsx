@@ -15,6 +15,8 @@ export const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const savedEmail = localStorage.getItem("remembered_email") || "";
+
     const {
         register,
         handleSubmit,
@@ -22,9 +24,9 @@ export const LoginPage: React.FC = () => {
     } = useForm<LoginFormData>({
         resolver: yupResolver(loginSchema),
         defaultValues: {
-            email: "superadmin@admin.com",
+            email: savedEmail || "superadmin@admin.com",
             password: "SuperAdmin@123",
-            rememberMe: true,
+            rememberMe: Boolean(savedEmail) || true,
         },
     });
 
@@ -32,11 +34,18 @@ export const LoginPage: React.FC = () => {
         setIsLoading(true);
 
         try {
+            if (data.rememberMe) {
+                localStorage.setItem("remembered_email", data.email);
+            } else {
+                localStorage.removeItem("remembered_email");
+            }
+
             const response = await apiClient.post<ApiResponse<LoginResponse>>(
                 "/admin/auth/login",
                 {
                     email: data.email,
                     password: data.password,
+                    rememberMe: data.rememberMe,
                 },
             );
 
@@ -134,14 +143,14 @@ export const LoginPage: React.FC = () => {
 
                 {/* Options Row */}
                 <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                    {/* <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
                             type="checkbox"
                             {...register("rememberMe")}
                             className="w-4 h-4 text-[#164E50] border-[#E5E0D8] rounded-md focus:ring-[#164E50]"
                         />
                         <span className="text-xs text-[#64748B] font-medium">Remember me</span>
-                    </label>
+                    </label> */}
 
                     <Link
                         to="/admin/forgot-password"

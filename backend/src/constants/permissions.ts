@@ -72,6 +72,7 @@ export const PERMISSION_ALIASES: Record<string, string[]> = {
     "customer:create": ["customer:create", "CUSTOMER_CREATE"],
     "customer:edit": ["customer:edit", "CUSTOMER_EDIT"],
     "customer:delete": ["customer:delete", "CUSTOMER_DELETE"],
+
 };
 
 export const ALL_PERMISSIONS_LIST = SYSTEM_PERMISSIONS.map((p) => p.code);

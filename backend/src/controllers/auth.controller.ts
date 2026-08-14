@@ -10,14 +10,14 @@ const authService = new AuthService();
 
 export class AuthController {
     login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { email, password } = req.body;
+        const { email, password, rememberMe } = req.body;
 
         const { accessToken, refreshToken, admin } = await authService.login(
             email,
             password,
         );
 
-        res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+        res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions(Boolean(rememberMe)));
 
         successResponse(res, "Login successful", {
             accessToken,

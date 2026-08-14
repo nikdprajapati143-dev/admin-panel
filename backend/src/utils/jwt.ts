@@ -53,11 +53,15 @@ export const hashResetToken = (token: string): string => {
     return crypto.createHash("sha256").update(token).digest("hex");
 };
 
-export const getRefreshTokenCookieOptions = (): CookieOptions => {
+export const getRefreshTokenCookieOptions = (rememberMe: boolean = false): CookieOptions => {
+    const maxAge = rememberMe
+        ? 30 * 24 * 60 * 60 * 1000 // 30 days if Remember Me is checked
+        : 1 * 24 * 60 * 60 * 1000;  // 1 day standard session
+
     return {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge,
     };
 };
