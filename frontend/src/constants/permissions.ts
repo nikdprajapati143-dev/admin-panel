@@ -20,6 +20,13 @@ export const PERMISSIONS = {
     CUSTOMER_EDIT: "customer:edit",
     CUSTOMER_DELETE: "customer:delete",
 
+    // FAQ Management
+    FAQ_VIEW: "faq:read",
+    FAQ_LIST: "faq:list",
+    FAQ_CREATE: "faq:create",
+    FAQ_EDIT: "faq:edit",
+    FAQ_DELETE: "faq:delete",
+
     // Wildcard
     ALL: "*",
 } as const;
@@ -43,4 +50,10 @@ export const PERMISSION_ALIASES: Record<string, string[]> = {
     [PERMISSIONS.CUSTOMER_CREATE]: ["customer:create", "CUSTOMER_CREATE"],
     [PERMISSIONS.CUSTOMER_EDIT]: ["customer:edit", "CUSTOMER_EDIT"],
     [PERMISSIONS.CUSTOMER_DELETE]: ["customer:delete", "CUSTOMER_DELETE"],
+
+    [PERMISSIONS.FAQ_VIEW]: ["faq:read", "FAQ_VIEW"],
+    [PERMISSIONS.FAQ_LIST]: ["faq:list", "FAQ_LIST"],
+    [PERMISSIONS.FAQ_CREATE]: ["faq:create", "FAQ_CREATE"],
+    [PERMISSIONS.FAQ_EDIT]: ["faq:edit", "FAQ_EDIT"],
+    [PERMISSIONS.FAQ_DELETE]: ["faq:delete", "FAQ_DELETE"],
 };

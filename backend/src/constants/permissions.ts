@@ -26,6 +26,13 @@ export const SYSTEM_PERMISSIONS: SystemPermissionDefinition[] = [
     { name: "List Roles", code: "role:list", module: "ROLE", description: "List all roles and permission matrix" },
     { name: "Edit Roles", code: "role:edit", module: "ROLE", description: "Modify role details and permission matrix" },
     { name: "Delete Roles", code: "role:delete", module: "ROLE", description: "Delete custom roles" },
+
+    // FAQ Management Permissions
+    { name: "Create FAQs", code: "faq:create", module: "FAQ", description: "Create new FAQ entries" },
+    { name: "View FAQs", code: "faq:read", module: "FAQ", description: "View FAQ details" },
+    { name: "List FAQs", code: "faq:list", module: "FAQ", description: "List all FAQ items" },
+    { name: "Edit FAQs", code: "faq:edit", module: "FAQ", description: "Update FAQ content and status" },
+    { name: "Delete FAQs", code: "faq:delete", module: "FAQ", description: "Delete FAQ entries" },
 ];
 
 export const PERMISSIONS = {
@@ -50,6 +57,13 @@ export const PERMISSIONS = {
     CUSTOMER_EDIT: "customer:edit",
     CUSTOMER_DELETE: "customer:delete",
 
+    // FAQ Management Permissions
+    FAQ_CREATE: "faq:create",
+    FAQ_READ: "faq:read",
+    FAQ_LIST: "faq:list",
+    FAQ_EDIT: "faq:edit",
+    FAQ_DELETE: "faq:delete",
+
     // Super Admin Full Access Root Permission
     ALL: "*",
 } as const;
@@ -73,6 +87,11 @@ export const PERMISSION_ALIASES: Record<string, string[]> = {
     "customer:edit": ["customer:edit", "CUSTOMER_EDIT"],
     "customer:delete": ["customer:delete", "CUSTOMER_DELETE"],
 
+    "faq:read": ["faq:read", "FAQ_VIEW"],
+    "faq:list": ["faq:list", "FAQ_LIST"],
+    "faq:create": ["faq:create", "FAQ_CREATE"],
+    "faq:edit": ["faq:edit", "FAQ_EDIT"],
+    "faq:delete": ["faq:delete", "FAQ_DELETE"],
 };
 
 export const ALL_PERMISSIONS_LIST = SYSTEM_PERMISSIONS.map((p) => p.code);

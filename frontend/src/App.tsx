@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./context/ThemeContext.js";
+import { AppToaster } from "./components/common/AppToaster.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.js";
 import { PublicRoute } from "./components/PublicRoute.js";
 import { AdminLayout } from "./layouts/AdminLayout.js";
@@ -17,6 +18,10 @@ import { CustomerListPage } from "./pages/customers/CustomerListPage.js";
 import { CustomerCreatePage } from "./pages/customers/CustomerCreatePage.js";
 import { CustomerEditPage } from "./pages/customers/CustomerEditPage.js";
 import { CustomerDetailPage } from "./pages/customers/CustomerDetailPage.js";
+import { FaqListPage } from "./pages/faqs/FaqListPage.js";
+import { FaqCreatePage } from "./pages/faqs/FaqCreatePage.js";
+import { FaqEditPage } from "./pages/faqs/FaqEditPage.js";
+import { FaqDetailPage } from "./pages/faqs/FaqDetailPage.js";
 import { DashboardPage } from "./pages/dashboard/DashboardPage.js";
 import { ChangePasswordPage } from "./pages/profile/ChangePasswordPage.js";
 import { ProfilePage } from "./pages/profile/ProfilePage.js";
@@ -41,6 +46,7 @@ function App() {
         <ThemeProvider>
             <QueryClientProvider client={queryClient}>
                 <Toaster position="top-right" richColors closeButton />
+                {/* <AppToaster /> */}
                 <BrowserRouter>
                     <Routes>
                         {/* Root Redirect to Dashboard / Login */}
@@ -64,7 +70,7 @@ function App() {
                                 <Route path="profile" element={<ProfilePage />} />
                                 <Route path="change-password" element={<ChangePasswordPage />} />
 
-                                 {/* Admins Routes */}
+                                {/* Admins Routes */}
                                 <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ADMIN_LIST} />}>
                                     <Route path="admins" element={<AdminListPage />} />
                                 </Route>
@@ -90,6 +96,20 @@ function App() {
                                 </Route>
                                 <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.CUSTOMER_EDIT} />}>
                                     <Route path="customers/:id/edit" element={<CustomerEditPage />} />
+                                </Route>
+
+                                {/* FAQs Routes */}
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.FAQ_LIST} />}>
+                                    <Route path="faqs" element={<FaqListPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.FAQ_VIEW} />}>
+                                    <Route path="faqs/:id" element={<FaqDetailPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.FAQ_CREATE} />}>
+                                    <Route path="faqs/create" element={<FaqCreatePage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.FAQ_EDIT} />}>
+                                    <Route path="faqs/:id/edit" element={<FaqEditPage />} />
                                 </Route>
 
                                 {/* Roles Routes */}

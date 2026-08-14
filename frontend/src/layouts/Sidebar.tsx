@@ -5,6 +5,7 @@ import {
     Users,
     Shield,
     UserCheck,
+    HelpCircle,
     Key,
     ChevronRight,
     X,
@@ -50,6 +51,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             path: "/admin/customers",
             icon: UserCheck,
             permissions: [PERMISSIONS.CUSTOMER_LIST, PERMISSIONS.CUSTOMER_VIEW],
+        },
+        {
+            label: "FAQs",
+            path: "/admin/faqs",
+            icon: HelpCircle,
+            permissions: [PERMISSIONS.FAQ_LIST, PERMISSIONS.FAQ_VIEW],
         },
     ];
 
