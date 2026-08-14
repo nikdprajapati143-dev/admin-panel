@@ -2,22 +2,22 @@ import { renderEmailLayout } from "./layout.js";
 import { env } from "../../config/env.js";
 
 export interface AdminCreatedEmailData {
-    name: string;
-    email: string;
-    role: string;
-    temporaryPassword?: string;
-    loginUrl?: string;
+  name: string;
+  email: string;
+  role: string;
+  temporaryPassword?: string;
+  loginUrl?: string;
 }
 
 export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
-    const {
-        name,
-        email,
-        temporaryPassword = "GeneratedAtCreation",
-        loginUrl = `${env.FRONTEND_URL}/admin/login`,
-    } = data;
+  const {
+    name,
+    email,
+    temporaryPassword = "GeneratedAtCreation",
+    loginUrl = `${env.FRONTEND_URL}/admin/login`,
+  } = data;
 
-    const contentHtml = `
+  const contentHtml = `
     <!-- Header Greeting -->
     <div style="text-align: center; margin-bottom: 28px;">
       <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #1E293B; font-size: 26px; font-weight: 700; margin: 0 0 8px 0;">
@@ -60,11 +60,11 @@ export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
     </div>
 
     <!-- Dark Teal CTA Button -->
-    <div style="text-align: center; margin-bottom: 32px;">
+    <!--<div style="text-align: center; margin-bottom: 32px;">
       <a href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #164E50; color: #ffffff !important; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 36px; border-radius: 8px; box-shadow: 0 4px 10px rgba(22, 78, 80, 0.25);">
-        Login to Your Dashboard &rarr;
+        Login &rarr;
       </a>
-    </div>
+    </div>-->
 
     <div style="border-top: 1px solid #E5E0D8; padding-top: 20px; text-align: center;">
       <p style="font-size: 12px; color: #64748B; margin: 0 0 6px 0;">
@@ -79,9 +79,9 @@ export function getAdminCreatedEmail(data: AdminCreatedEmailData): string {
     </div>
   `;
 
-    return renderEmailLayout({
-        title: "Welcome Administrator",
-        previewText: `Welcome ${name}! Your administrator account is ready.`,
-        contentHtml,
-    });
+  return renderEmailLayout({
+    title: "Welcome Administrator",
+    previewText: `Welcome ${name}! Your administrator account is ready.`,
+    contentHtml,
+  });
 }

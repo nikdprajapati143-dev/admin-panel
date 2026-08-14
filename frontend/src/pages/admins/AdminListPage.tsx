@@ -18,14 +18,14 @@ import {
     ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { DeleteConfirmModal } from "../../components/common/DeleteConfirmModal.js";
 import { PermissionGuard } from "../../components/PermissionGuard.js";
 import { PERMISSIONS } from "../../constants/permissions.js";
 import { useAuthStore } from "../../store/authStore.js";
 import { usePermission } from "../../hooks/usePermission.js";
+import { useAdmins, useToggleAdminStatus, useDeleteAdmin } from "../../hooks/useAdmins.js";
 import { getAvatarUrl } from "../../components/admins/AdminForm.js";
-import type { AdminUser, ApiResponse } from "../../types/auth.js";
+import type { AdminUser } from "../../types/auth.js";
 
 export const AdminListPage: React.FC = () => {
     const navigate = useNavigate();
@@ -49,19 +49,17 @@ export const AdminListPage: React.FC = () => {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
 
-    // Fetch Admins list
-    const { data: adminsResponse, isLoading, isError, error } = useQuery({
-        queryKey: ["admins", page, limit, search],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<AdminUser[]>>(
-                `/admin/admins?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
-            );
-            return res.data;
-        },
-    });
+    // Fetch Admins list using custom query hook
+    const { data: adminsResponse, isLoading, isError, error } = useAdmins({ page, limit, search });
 
-    const adminsList = adminsResponse?.data || [];
-    const meta = adminsResponse?.meta;
+    const toggleStatusMutation = useToggleAdminStatus();
+    const deleteMutation = useDeleteAdmin();
+
+    const responseData = adminsResponse?.data;
+    const adminsList: AdminUser[] = Array.isArray(responseData)
+        ? responseData
+        : (responseData as any)?.admins || [];
+    const meta = adminsResponse?.meta || (responseData as any)?.meta;
 
     // Sorting Handler
     const handleSort = (field: string) => {
@@ -123,50 +121,20 @@ export const AdminListPage: React.FC = () => {
         );
     };
 
-    // Direct Toggle Admin Status Mutation calling dedicated PATCH /admin/admins/:id/status API
-    const toggleStatusMutation = useMutation({
-        mutationFn: async ({ id, newStatus }: { id: string; newStatus: "ACTIVE" | "INACTIVE" }) => {
-            const res = await apiClient.patch<ApiResponse>(`/admin/admins/${id}/status`, {
-                status: newStatus,
-            });
-            return res.data;
-        },
-        onSuccess: (_, variables) => {
-            if (variables.newStatus === "ACTIVE") {
-                toast.success("Admin Activated successfully!");
-            } else {
-                toast.success("Admin Deactivated successfully!");
-            }
-            queryClient.invalidateQueries({ queryKey: ["admins"] });
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to update admin status";
-            toast.error(msg);
-        },
-    });
-
-    // Delete Admin Mutation
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            const res = await apiClient.delete<ApiResponse>(`/admin/admins/${id}`);
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Admin deleted successfully!");
-            queryClient.invalidateQueries({ queryKey: ["admins"] });
-            setIsDeleteOpen(false);
-            setDeletingAdminId(null);
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to delete admin";
-            toast.error(msg);
-        },
-    });
-
     const handleConfirmDelete = () => {
-        if (deletingAdminId) {
-            deleteMutation.mutate(deletingAdminId);
-        }
+        if (!deletingAdminId) return;
+        deleteMutation.mutate(deletingAdminId, {
+            onSuccess: () => {
+                setIsDeleteOpen(false);
+                setDeletingAdminId(null);
+            },
+        });
+    };
+
+    const handleToggleStatus = (adminId: string, currentStatus: string, isSelf: boolean) => {
+        if (isSelf) return;
+        const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        toggleStatusMutation.mutate({ id: adminId, newStatus });
     };
 
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -319,14 +287,7 @@ export const AdminListPage: React.FC = () => {
                                             {/* STATUS Toggle Switch */}
                                             <td className="py-3.5 px-5 text-center">
                                                 <button
-                                                    onClick={() => {
-                                                        if (!isSelf) {
-                                                            toggleStatusMutation.mutate({
-                                                                id: adminId,
-                                                                newStatus: isCurrentActive ? "INACTIVE" : "ACTIVE",
-                                                            });
-                                                        }
-                                                    }}
+                                                    onClick={() => handleToggleStatus(adminId, adm.status, isSelf)}
                                                     disabled={isSelf || toggleStatusMutation.isPending}
                                                     className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer mx-auto ${isCurrentActive
                                                             ? "bg-[#164E50] dark:bg-teal-500 justify-end"

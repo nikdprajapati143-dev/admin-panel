@@ -1,56 +1,36 @@
 import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, Shield, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { RoleForm } from "../../components/roles/RoleForm.js";
+import { useRole, useUpdateRole } from "../../hooks/useRoles.js";
 import type { RoleFormData } from "../../schemas/role.schema.js";
-import type { ApiResponse, RoleInfo } from "../../types/auth.js";
 
 export const RoleEditPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
-    // Fetch Target Role details
+    // Fetch Target Role details using custom hook
     const {
         data: roleResponse,
         isLoading: isLoadingRole,
         isError,
         error,
-    } = useQuery({
-        queryKey: ["role-detail", id],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<RoleInfo>>(`/admin/roles/${id}`);
-            return res.data;
-        },
-        enabled: Boolean(id),
-    });
+    } = useRole(id);
 
     const roleData = roleResponse?.data;
-
-    // Update Role Mutation
-    const updateMutation = useMutation({
-        mutationFn: async (data: RoleFormData) => {
-            const res = await apiClient.put<ApiResponse<RoleInfo>>(`/admin/roles/${id}`, data);
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Role updated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["roles"] });
-            queryClient.invalidateQueries({ queryKey: ["roles-list"] });
-            queryClient.invalidateQueries({ queryKey: ["role-detail", id] });
-            navigate("/admin/roles");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to update role";
-            toast.error(msg);
-        },
-    });
+    const updateMutation = useUpdateRole();
 
     const handleFormSubmit = (data: RoleFormData) => {
-        updateMutation.mutate(data);
+        if (!id) return;
+        updateMutation.mutate(
+            { id, data },
+            {
+                onSuccess: () => {
+                    navigate("/admin/roles");
+                },
+            },
+        );
     };
 
     const handleCancel = () => {

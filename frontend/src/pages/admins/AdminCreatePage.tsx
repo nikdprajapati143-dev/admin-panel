@@ -5,11 +5,11 @@ import { ArrowLeft, Users, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../api/client.js";
 import { AdminForm } from "../../components/admins/AdminForm.js";
-import type { AdminUser, ApiResponse, RoleInfo } from "../../types/auth.js";
+import { useCreateAdmin } from "../../hooks/useAdmins.js";
+import type { ApiResponse, RoleInfo } from "../../types/auth.js";
 
 export const AdminCreatePage: React.FC = () => {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     // Fetch Roles for dropdown
     const { data: rolesResponse, isLoading: isLoadingRoles } = useQuery({
@@ -22,27 +22,15 @@ export const AdminCreatePage: React.FC = () => {
 
     const rolesList = rolesResponse?.data || [];
 
-    // Create Admin Mutation
-    const createMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            const res = await apiClient.post<ApiResponse<AdminUser>>("/admin/admins", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Admin created successfully!");
-            queryClient.invalidateQueries({ queryKey: ["admins"] });
-            navigate("/admin/admins");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to create admin";
-            toast.error(msg);
-        },
-    });
+    // Create Admin Mutation Hook
+    const createMutation = useCreateAdmin();
 
     const handleFormSubmit = (formData: FormData) => {
-        createMutation.mutate(formData);
+        createMutation.mutate(formData, {
+            onSuccess: () => {
+                navigate("/admin/admins");
+            },
+        });
     };
 
     const handleCancel = () => {

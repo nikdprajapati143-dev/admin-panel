@@ -21,6 +21,8 @@ export const countryCodeSchema = z
     .default("+965")
     .transform((val) => (val.startsWith("+") ? val : `+${val}`));
 
+const avatarSchema = z.union([z.string(), z.any()]).optional();
+
 export const createCustomerSchema = z.object({
     body: z.object({
         firstName: z.string().min(1, "First name is required").trim(),
@@ -28,7 +30,7 @@ export const createCustomerSchema = z.object({
         email: z.string().email("Invalid email address"),
         countryCode: countryCodeSchema,
         phone: kuwaitPhoneSchema,
-        avatar: z.string().optional(),
+        avatar: avatarSchema,
         status: z.nativeEnum(CustomerStatus).optional(),
     }),
 });
@@ -43,7 +45,7 @@ export const updateCustomerSchema = z.object({
         email: z.string().email("Invalid email address").optional(),
         countryCode: countryCodeSchema.optional(),
         phone: kuwaitPhoneSchema.optional(),
-        avatar: z.string().optional(),
+        avatar: avatarSchema,
         status: z.nativeEnum(CustomerStatus).optional(),
     }),
 });

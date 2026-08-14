@@ -1,29 +1,20 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, UserCheck, Mail, Phone, Calendar, Loader2, AlertCircle, Edit2 } from "lucide-react";
-import { apiClient } from "../../api/client.js";
 import { getAvatarUrl } from "../../components/admins/AdminForm.js";
-import type { ApiResponse } from "../../types/auth.js";
+import { useCustomer } from "../../hooks/useCustomers.js";
 
 export const CustomerDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // Fetch Target Customer details
+    // Fetch Target Customer details using custom hook
     const {
         data: customerResponse,
         isLoading,
         isError,
         error,
-    } = useQuery({
-        queryKey: ["customer-detail", id],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<any>>(`/admin/customers/${id}`);
-            return res.data;
-        },
-        enabled: Boolean(id),
-    });
+    } = useCustomer(id);
 
     const customer = customerResponse?.data;
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";

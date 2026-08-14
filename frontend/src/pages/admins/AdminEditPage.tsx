@@ -5,27 +5,20 @@ import { ArrowLeft, Users, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "../../api/client.js";
 import { AdminForm } from "../../components/admins/AdminForm.js";
-import type { AdminUser, ApiResponse, RoleInfo } from "../../types/auth.js";
+import { useAdmin, useUpdateAdmin } from "../../hooks/useAdmins.js";
+import type { ApiResponse, RoleInfo } from "../../types/auth.js";
 
 export const AdminEditPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
-    // Fetch Target Admin details
+    // Fetch Target Admin details using custom query hook
     const {
         data: adminResponse,
         isLoading: isLoadingAdmin,
         isError,
         error,
-    } = useQuery({
-        queryKey: ["admin-detail", id],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<AdminUser>>(`/admin/admins/${id}`);
-            return res.data;
-        },
-        enabled: Boolean(id),
-    });
+    } = useAdmin(id);
 
     // Fetch Roles for dropdown
     const { data: rolesResponse, isLoading: isLoadingRoles } = useQuery({
@@ -39,28 +32,19 @@ export const AdminEditPage: React.FC = () => {
     const adminData = adminResponse?.data;
     const rolesList = rolesResponse?.data || [];
 
-    // Update Admin Mutation
-    const updateMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            const res = await apiClient.put<ApiResponse<AdminUser>>(`/admin/admins/${id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Admin updated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["admins"] });
-            queryClient.invalidateQueries({ queryKey: ["admin-detail", id] });
-            navigate("/admin/admins");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to update admin";
-            toast.error(msg);
-        },
-    });
+    // Custom Update Admin Mutation Hook
+    const updateMutation = useUpdateAdmin();
 
     const handleFormSubmit = (formData: FormData) => {
-        updateMutation.mutate(formData);
+        if (!id) return;
+        updateMutation.mutate(
+            { id, data: formData },
+            {
+                onSuccess: () => {
+                    navigate("/admin/admins");
+                },
+            },
+        );
     };
 
     const handleCancel = () => {

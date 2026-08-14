@@ -1,37 +1,21 @@
 import React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { RoleForm } from "../../components/roles/RoleForm.js";
+import { useCreateRole } from "../../hooks/useRoles.js";
 import type { RoleFormData } from "../../schemas/role.schema.js";
-import type { ApiResponse, RoleInfo } from "../../types/auth.js";
 
 export const RoleCreatePage: React.FC = () => {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-
-    // Create Role Mutation
-    const createMutation = useMutation({
-        mutationFn: async (data: RoleFormData) => {
-            const res = await apiClient.post<ApiResponse<RoleInfo>>("/admin/roles", data);
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Role created successfully!");
-            queryClient.invalidateQueries({ queryKey: ["roles"] });
-            queryClient.invalidateQueries({ queryKey: ["roles-list"] });
-            navigate("/admin/roles");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to create role";
-            toast.error(msg);
-        },
-    });
+    const createMutation = useCreateRole();
 
     const handleFormSubmit = (data: RoleFormData) => {
-        createMutation.mutate(data);
+        createMutation.mutate(data, {
+            onSuccess: () => {
+                navigate("/admin/roles");
+            },
+        });
     };
 
     const handleCancel = () => {

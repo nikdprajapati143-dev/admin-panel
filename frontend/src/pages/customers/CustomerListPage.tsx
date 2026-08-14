@@ -18,16 +18,15 @@ import {
     ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { DeleteConfirmModal } from "../../components/common/DeleteConfirmModal.js";
 import { PermissionGuard } from "../../components/PermissionGuard.js";
 import { PERMISSIONS } from "../../constants/permissions.js";
 import { usePermission } from "../../hooks/usePermission.js";
-import type { ApiResponse } from "../../types/auth.js";
+import { useCustomers, useToggleCustomerStatus, useDeleteCustomer } from "../../hooks/useCustomers.js";
+import type { CustomerUser } from "../../types/customer.types.js";
 
 export const CustomerListPage: React.FC = () => {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const { hasPermission } = usePermission();
 
     const canViewCustomer = hasPermission(PERMISSIONS.CUSTOMER_VIEW);
@@ -47,21 +46,22 @@ export const CustomerListPage: React.FC = () => {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
 
-    // Fetch Customers List
-    const { data: customersResponse, isLoading, isError, error } = useQuery({
-        queryKey: ["customers", page, limit, search, statusFilter],
-        queryFn: async () => {
-            let url = `/admin/customers?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
-            if (statusFilter !== "ALL") {
-                url += `&status=${statusFilter}`;
-            }
-            const res = await apiClient.get<ApiResponse<any[]>>(url);
-            return res.data;
-        },
+    // Fetch Customers List via custom hook
+    const { data: customersResponse, isLoading, isError, error } = useCustomers({
+        page,
+        limit,
+        search,
+        status: statusFilter,
     });
 
-    const customersList = customersResponse?.data || [];
-    const meta = customersResponse?.meta;
+    const toggleStatusMutation = useToggleCustomerStatus();
+    const deleteMutation = useDeleteCustomer();
+
+    const responseData = customersResponse?.data;
+    const customersList: CustomerUser[] = Array.isArray(responseData)
+        ? responseData
+        : (responseData as any)?.customers || [];
+    const meta = customersResponse?.meta || (responseData as any)?.meta;
 
     // Sorting Handler
     const handleSort = (field: string) => {
@@ -120,50 +120,20 @@ export const CustomerListPage: React.FC = () => {
         );
     };
 
-    // Direct Toggle Customer Status Mutation calling dedicated PATCH /admin/customers/:id/status API
-    const toggleStatusMutation = useMutation({
-        mutationFn: async ({ id, newStatus }: { id: string; newStatus: "ACTIVE" | "INACTIVE" }) => {
-            const res = await apiClient.patch<ApiResponse>(`/admin/customers/${id}/status`, {
-                status: newStatus,
-            });
-            return res.data;
-        },
-        onSuccess: (_, variables) => {
-            if (variables.newStatus === "ACTIVE") {
-                toast.success("Customer Activated successfully!");
-            } else {
-                toast.success("Customer Deactivated successfully!");
-            }
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to update customer status";
-            toast.error(msg);
-        },
-    });
-
-    // Delete Customer Mutation
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            const res = await apiClient.delete<ApiResponse>(`/admin/customers/${id}`);
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Customer deleted successfully!");
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-            setIsDeleteOpen(false);
-            setDeletingCustomerId(null);
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to delete customer";
-            toast.error(msg);
-        },
-    });
-
     const handleConfirmDelete = () => {
-        if (deletingCustomerId) {
-            deleteMutation.mutate(deletingCustomerId);
-        }
+        if (!deletingCustomerId) return;
+
+        deleteMutation.mutate(deletingCustomerId, {
+            onSuccess: () => {
+                setIsDeleteOpen(false);
+                setDeletingCustomerId(null);
+            },
+        });
+    };
+
+    const handleToggleStatus = (customerId: string, currentStatus: string) => {
+        const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        toggleStatusMutation.mutate({ id: customerId, newStatus });
     };
 
     return (
@@ -311,12 +281,7 @@ export const CustomerListPage: React.FC = () => {
                                             {/* STATUS Toggle Switch */}
                                             <td className="py-3.5 px-5 text-center">
                                                 <button
-                                                    onClick={() =>
-                                                        toggleStatusMutation.mutate({
-                                                            id: customerId,
-                                                            newStatus: isCurrentActive ? "INACTIVE" : "ACTIVE",
-                                                        })
-                                                    }
+                                                    onClick={() => handleToggleStatus(customerId, cust.status)}
                                                     disabled={toggleStatusMutation.isPending}
                                                     className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer mx-auto ${isCurrentActive
                                                         ? "bg-[#164E50] dark:bg-teal-500 justify-end"

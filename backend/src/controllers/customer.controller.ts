@@ -8,11 +8,19 @@ const customerService = new CustomerService();
 
 export class CustomerController {
     createCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const avatar = req.file ? `/uploads/${req.file.filename}` : req.body.avatar;
-        const newCustomer = await customerService.createCustomer({
-            ...req.body,
-            ...(avatar && { avatar }),
-        });
+        const { avatar: bodyAvatar, ...restBody } = req.body;
+        const avatar = req.file
+            ? `/uploads/${req.file.filename}`
+            : typeof bodyAvatar === "string" && bodyAvatar.trim() !== ""
+            ? bodyAvatar
+            : undefined;
+
+        const payload = {
+            ...restBody,
+            ...(avatar ? { avatar } : {}),
+        };
+
+        const newCustomer = await customerService.createCustomer(payload);
         createdResponse(res, "Customer created successfully", CustomerTransformer.transform(newCustomer));
     });
 
@@ -29,11 +37,19 @@ export class CustomerController {
 
     updateCustomer = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id as string;
-        const avatar = req.file ? `/uploads/${req.file.filename}` : req.body.avatar;
-        const updatedCustomer = await customerService.updateCustomer(id, {
-            ...req.body,
-            ...(avatar && { avatar }),
-        });
+        const { avatar: bodyAvatar, ...restBody } = req.body;
+        const avatar = req.file
+            ? `/uploads/${req.file.filename}`
+            : typeof bodyAvatar === "string" && bodyAvatar.trim() !== ""
+            ? bodyAvatar
+            : undefined;
+
+        const payload = {
+            ...restBody,
+            ...(avatar ? { avatar } : {}),
+        };
+
+        const updatedCustomer = await customerService.updateCustomer(id, payload);
         successResponse(res, "Customer updated successfully", CustomerTransformer.transform(updatedCustomer));
     });
 

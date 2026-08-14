@@ -2,6 +2,8 @@ import { z } from "zod";
 import { AdminStatus } from "../models/admin.model.js";
 import { objectIdSchema } from "./common.validator.js";
 
+const avatarSchema = z.union([z.string(), z.any()]).optional();
+
 export const createAdminSchema = z.object({
     body: z.object({
         name: z.string().min(2, "Name must be at least 2 characters").trim(),
@@ -15,7 +17,7 @@ export const createAdminSchema = z.object({
             )
             .optional(),
         role: objectIdSchema,
-        avatar: z.string().optional(),
+        avatar: avatarSchema,
         status: z.nativeEnum(AdminStatus).optional(),
     }),
 });
@@ -28,7 +30,7 @@ export const updateAdminSchema = z.object({
         name: z.string().min(2, "Name must be at least 2 characters").trim().optional(),
         email: z.string().email("Invalid email address").optional(),
         role: objectIdSchema.optional(),
-        avatar: z.string().optional(),
+        avatar: avatarSchema,
         status: z.nativeEnum(AdminStatus).optional(),
     }),
 });
@@ -46,6 +48,6 @@ export const updateProfileSchema = z.object({
     body: z.object({
         name: z.string().min(2, "Name must be at least 2 characters").trim().optional(),
         email: z.string().email("Invalid email address").optional(),
-        avatar: z.string().optional(),
+        avatar: avatarSchema,
     }),
 });

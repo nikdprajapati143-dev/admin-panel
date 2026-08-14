@@ -1,37 +1,20 @@
 import React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { CustomerForm } from "../../components/customers/CustomerForm.js";
-import type { ApiResponse } from "../../types/auth.js";
+import { useCreateCustomer } from "../../hooks/useCustomers.js";
 
 export const CustomerCreatePage: React.FC = () => {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-
-    // Create Customer Mutation
-    const createMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            const res = await apiClient.post<ApiResponse<any>>("/admin/customers", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Customer created successfully!");
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-            navigate("/admin/customers");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to create customer";
-            toast.error(msg);
-        },
-    });
+    const createMutation = useCreateCustomer();
 
     const handleFormSubmit = (formData: FormData) => {
-        createMutation.mutate(formData);
+        createMutation.mutate(formData, {
+            onSuccess: () => {
+                navigate("/admin/customers");
+            },
+        });
     };
 
     const handleCancel = () => {

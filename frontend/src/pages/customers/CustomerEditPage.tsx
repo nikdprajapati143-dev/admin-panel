@@ -1,56 +1,35 @@
 import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, UserCheck, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { CustomerForm } from "../../components/customers/CustomerForm.js";
-import type { ApiResponse } from "../../types/auth.js";
+import { useCustomer, useUpdateCustomer } from "../../hooks/useCustomers.js";
 
 export const CustomerEditPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
-    // Fetch Target Customer details
+    // Fetch Target Customer details using custom hook
     const {
         data: customerResponse,
         isLoading: isLoadingCustomer,
         isError,
         error,
-    } = useQuery({
-        queryKey: ["customer-detail", id],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<any>>(`/admin/customers/${id}`);
-            return res.data;
-        },
-        enabled: Boolean(id),
-    });
+    } = useCustomer(id);
 
     const customerData = customerResponse?.data;
-
-    // Update Customer Mutation
-    const updateMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            const res = await apiClient.put<ApiResponse<any>>(`/admin/customers/${id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Customer updated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-            queryClient.invalidateQueries({ queryKey: ["customer-detail", id] });
-            navigate("/admin/customers");
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to update customer";
-            toast.error(msg);
-        },
-    });
+    const updateMutation = useUpdateCustomer();
 
     const handleFormSubmit = (formData: FormData) => {
-        updateMutation.mutate(formData);
+        if (!id) return;
+        updateMutation.mutate(
+            { id, data: formData },
+            {
+                onSuccess: () => {
+                    navigate("/admin/customers");
+                },
+            },
+        );
     };
 
     const handleCancel = () => {

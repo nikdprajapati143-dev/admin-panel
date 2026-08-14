@@ -8,15 +8,20 @@ const adminService = new AdminService();
 
 export class AdminController {
     createAdmin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const avatar = req.file ? `/uploads/${req.file.filename}` : req.body.avatar;
+        const { avatar: bodyAvatar, ...restBody } = req.body;
+        const avatar = req.file
+            ? `/uploads/${req.file.filename}`
+            : typeof bodyAvatar === "string" && bodyAvatar.trim() !== ""
+            ? bodyAvatar
+            : undefined;
         const currentUserRoleName = req.user!.role.name;
-        const newAdmin = await adminService.createAdmin(
-            {
-                ...req.body,
-                ...(avatar && { avatar }),
-            },
-            currentUserRoleName,
-        );
+
+        const payload = {
+            ...restBody,
+            ...(avatar ? { avatar } : {}),
+        };
+
+        const newAdmin = await adminService.createAdmin(payload, currentUserRoleName);
         createdResponse(res, "Admin created successfully", AdminTransformer.transform(newAdmin));
     });
 
@@ -35,16 +40,20 @@ export class AdminController {
 
     updateAdmin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id as string;
-        const avatar = req.file ? `/uploads/${req.file.filename}` : req.body.avatar;
+        const { avatar: bodyAvatar, ...restBody } = req.body;
+        const avatar = req.file
+            ? `/uploads/${req.file.filename}`
+            : typeof bodyAvatar === "string" && bodyAvatar.trim() !== ""
+            ? bodyAvatar
+            : undefined;
         const currentUserRoleName = req.user!.role.name;
-        const updatedAdmin = await adminService.updateAdmin(
-            id,
-            {
-                ...req.body,
-                ...(avatar && { avatar }),
-            },
-            currentUserRoleName,
-        );
+
+        const payload = {
+            ...restBody,
+            ...(avatar ? { avatar } : {}),
+        };
+
+        const updatedAdmin = await adminService.updateAdmin(id, payload, currentUserRoleName);
         successResponse(res, "Admin updated successfully", AdminTransformer.transform(updatedAdmin));
     });
 

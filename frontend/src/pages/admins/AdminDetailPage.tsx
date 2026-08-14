@@ -1,29 +1,20 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, Users, Shield, Mail, Calendar, Loader2, AlertCircle, Edit2, CheckCircle2 } from "lucide-react";
-import { apiClient } from "../../api/client.js";
 import { getAvatarUrl } from "../../components/admins/AdminForm.js";
-import type { AdminUser, ApiResponse } from "../../types/auth.js";
+import { useAdmin } from "../../hooks/useAdmins.js";
 
 export const AdminDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // Fetch Target Admin details
+    // Fetch Target Admin details using custom query hook
     const {
         data: adminResponse,
         isLoading,
         isError,
         error,
-    } = useQuery({
-        queryKey: ["admin-detail", id],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<AdminUser>>(`/admin/admins/${id}`);
-            return res.data;
-        },
-        enabled: Boolean(id),
-    });
+    } = useAdmin(id);
 
     const admin = adminResponse?.data;
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";

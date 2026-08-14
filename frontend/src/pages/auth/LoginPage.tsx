@@ -4,18 +4,17 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { useAuthStore } from "../../store/authStore.js";
 import { loginSchema } from "../../schemas/auth.schema.js";
+import { useLogin } from "../../hooks/useAuth.js";
 import type { LoginFormData } from "../../schemas/auth.schema.js";
-import type { ApiResponse, LoginResponse } from "../../types/auth.js";
 
 export const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
 
     const savedEmail = localStorage.getItem("remembered_email") || "";
+    const loginMutation = useLogin();
 
     const {
         register,
@@ -30,39 +29,35 @@ export const LoginPage: React.FC = () => {
         },
     });
 
-    const onSubmit = async (data: LoginFormData) => {
-        setIsLoading(true);
-
-        try {
-            if (data.rememberMe) {
-                localStorage.setItem("remembered_email", data.email);
-            } else {
-                localStorage.removeItem("remembered_email");
-            }
-
-            const response = await apiClient.post<ApiResponse<LoginResponse>>(
-                "/admin/auth/login",
-                {
-                    email: data.email,
-                    password: data.password,
-                    rememberMe: data.rememberMe,
-                },
-            );
-
-            if (response.data.success && response.data.data) {
-                const { accessToken, admin } = response.data.data;
-                useAuthStore.getState().setAuth(admin, accessToken);
-
-                toast.success("Login successful! Welcome back.");
-                navigate("/admin/dashboard", { replace: true });
-            }
-        } catch (error: any) {
-            const message =
-                error.response?.data?.message || "Invalid credentials or server error";
-            toast.error(message);
-        } finally {
-            setIsLoading(false);
+    const onSubmit = (data: LoginFormData) => {
+        if (data.rememberMe) {
+            localStorage.setItem("remembered_email", data.email);
+        } else {
+            localStorage.removeItem("remembered_email");
         }
+
+        loginMutation.mutate(
+            {
+                email: data.email,
+                password: data.password,
+                rememberMe: data.rememberMe,
+            },
+            {
+                onSuccess: (res) => {
+                    if (res.success && res.data) {
+                        const { accessToken, admin } = res.data;
+                        useAuthStore.getState().setAuth(admin, accessToken);
+
+                        toast.success("Login successful! Welcome back.");
+                        navigate("/admin/dashboard", { replace: true });
+                    }
+                },
+                onError: (err: any) => {
+                    const message = err.response?.data?.message || "Invalid credentials or server error";
+                    toast.error(message);
+                },
+            },
+        );
     };
 
     return (
@@ -164,10 +159,10 @@ export const LoginPage: React.FC = () => {
                 <div className="pt-2">
                     <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={loginMutation.isPending}
                         className="w-full py-3.5 px-6 rounded-full bg-[#164E50] text-white hover:bg-[#113E40] disabled:bg-slate-400 font-medium text-sm transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer"
                     >
-                        {isLoading ? (
+                        {loginMutation.isPending ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin text-white" />
                                 <span>Logging in...</span>

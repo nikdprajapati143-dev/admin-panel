@@ -38,7 +38,7 @@ export class CustomerRepository {
         return await Customer.findOneAndUpdate(
             { _id: id, isDeleted: false },
             { $set: updateData },
-            { new: true, runValidators: true },
+            { returnDocument: "after", runValidators: true },
         );
     }
 
@@ -46,7 +46,7 @@ export class CustomerRepository {
         return await Customer.findOneAndUpdate(
             { _id: id, isDeleted: false },
             { $set: { isDeleted: true, deletedAt: new Date() } },
-            { new: true },
+            { returnDocument: "after" },
         );
     }
 }

@@ -60,7 +60,7 @@ export class AdminRepository {
         return await Admin.findOneAndUpdate(
             { _id: id, isDeleted: false },
             { $set: updateData },
-            { new: true, runValidators: true },
+            { returnDocument: "after", runValidators: true },
         ).populate("role");
     }
 
@@ -102,7 +102,7 @@ export class AdminRepository {
         return await Admin.findOneAndUpdate(
             { _id: id, isDeleted: false },
             { $set: { isDeleted: true, deletedAt: new Date() } },
-            { new: true },
+            { returnDocument: "after" },
         );
     }
 }

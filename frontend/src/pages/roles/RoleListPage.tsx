@@ -16,12 +16,12 @@ import {
     ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "../../api/client.js";
 import { DeleteConfirmModal } from "../../components/common/DeleteConfirmModal.js";
 import { PermissionGuard } from "../../components/PermissionGuard.js";
 import { PERMISSIONS } from "../../constants/permissions.js";
 import { usePermission } from "../../hooks/usePermission.js";
-import type { ApiResponse, RoleInfo } from "../../types/auth.js";
+import { useRoles, useDeleteRole } from "../../hooks/useRoles.js";
+import type { RoleInfo } from "../../types/auth.js";
 
 export const RoleListPage: React.FC = () => {
     const navigate = useNavigate();
@@ -43,19 +43,20 @@ export const RoleListPage: React.FC = () => {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deletingRoleId, setDeletingRoleId] = useState<string | null>(null);
 
-    // Fetch Roles List
-    const { data: rolesResponse, isLoading, isError, error } = useQuery({
-        queryKey: ["roles", page, limit, search],
-        queryFn: async () => {
-            const res = await apiClient.get<ApiResponse<RoleInfo[]>>(
-                `/admin/roles?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
-            );
-            return res.data;
-        },
+    // Fetch Roles List via custom hook
+    const { data: rolesResponse, isLoading, isError, error } = useRoles({
+        page,
+        limit,
+        search,
     });
 
-    const rolesList = rolesResponse?.data || [];
-    const meta = rolesResponse?.meta;
+    const deleteMutation = useDeleteRole();
+
+    const responseData = rolesResponse?.data;
+    const rolesList: RoleInfo[] = Array.isArray(responseData)
+        ? responseData
+        : (responseData as any)?.roles || [];
+    const meta = rolesResponse?.meta || (responseData as any)?.meta;
 
     // Sorting Handler
     const handleSort = (field: string) => {
@@ -114,29 +115,15 @@ export const RoleListPage: React.FC = () => {
         );
     };
 
-    // Delete Role Mutation
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            const res = await apiClient.delete<ApiResponse>(`/admin/roles/${id}`);
-            return res.data;
-        },
-        onSuccess: () => {
-            toast.success("Role soft-deleted successfully!");
-            queryClient.invalidateQueries({ queryKey: ["roles"] });
-            queryClient.invalidateQueries({ queryKey: ["roles-list"] });
-            setIsDeleteOpen(false);
-            setDeletingRoleId(null);
-        },
-        onError: (err: any) => {
-            const msg = err.response?.data?.message || "Failed to delete role";
-            toast.error(msg);
-        },
-    });
-
     const handleConfirmDelete = () => {
-        if (deletingRoleId) {
-            deleteMutation.mutate(deletingRoleId);
-        }
+        if (!deletingRoleId) return;
+
+        deleteMutation.mutate(deletingRoleId, {
+            onSuccess: () => {
+                setIsDeleteOpen(false);
+                setDeletingRoleId(null);
+            },
+        });
     };
 
     return (
