@@ -22,14 +22,14 @@ router.post(
 
 router.get(
     "/roles",
-    authorizePermissions(PERMISSIONS.ROLE_READ),
+    authorizePermissions(PERMISSIONS.ROLE_READ, PERMISSIONS.ROLE_LIST),
     validate(paginationQuerySchema),
     roleController.getAllRoles,
 );
 
 router.get(
     "/roles/:id",
-    authorizePermissions(PERMISSIONS.ROLE_READ),
+    authorizePermissions(PERMISSIONS.ROLE_READ, PERMISSIONS.ROLE_LIST),
     validate(idParamSchema),
     roleController.getRoleById,
 );

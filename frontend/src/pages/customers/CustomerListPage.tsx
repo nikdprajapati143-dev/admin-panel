@@ -20,11 +20,20 @@ import {
 import { toast } from "sonner";
 import { apiClient } from "../../api/client.js";
 import { DeleteConfirmModal } from "../../components/common/DeleteConfirmModal.js";
+import { PermissionGuard } from "../../components/PermissionGuard.js";
+import { PERMISSIONS } from "../../constants/permissions.js";
+import { usePermission } from "../../hooks/usePermission.js";
 import type { ApiResponse } from "../../types/auth.js";
 
 export const CustomerListPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { hasPermission } = usePermission();
+
+    const canViewCustomer = hasPermission(PERMISSIONS.CUSTOMER_VIEW);
+    const canEditCustomer = hasPermission(PERMISSIONS.CUSTOMER_EDIT);
+    const canDeleteCustomer = hasPermission(PERMISSIONS.CUSTOMER_DELETE);
+    const hasAnyCustomerAction = canViewCustomer || canEditCustomer || canDeleteCustomer;
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -177,13 +186,15 @@ export const CustomerListPage: React.FC = () => {
                     </h2>
                 </div>
 
-                <Link
-                    to="/admin/customers/create"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#164E50] hover:bg-[#113E40] text-white font-semibold text-xs transition shadow-md w-fit cursor-pointer shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>Create Customer</span>
-                </Link>
+                <PermissionGuard permission={PERMISSIONS.CUSTOMER_CREATE}>
+                    <Link
+                        to="/admin/customers/create"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#164E50] hover:bg-[#113E40] text-white font-semibold text-xs transition shadow-md w-fit cursor-pointer shrink-0"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Create Customer</span>
+                    </Link>
+                </PermissionGuard>
             </div>
 
             {/* SINGLE UNIFIED WHITE CARD */}
@@ -214,7 +225,7 @@ export const CustomerListPage: React.FC = () => {
                             }}
                             className="w-full sm:w-40 px-3 py-2 bg-[#F7F5F0]/50 dark:bg-[#122529] border border-[#E5E0D8] dark:border-[#254C54] focus:border-[#164E50] dark:focus:border-teal-500 rounded-xl text-xs text-[#1E293B] dark:text-white outline-hidden transition cursor-pointer"
                         >
-                            <option value="ALL" className="bg-white dark:bg-[#122529] text-[#1E293B] dark:text-white">All Statuses</option>
+                            <option value="ALL" className="bg-white dark:bg-[#122529] text-[#1E293B] dark:text-white">All Status</option>
                             <option value="ACTIVE" className="bg-white dark:bg-[#122529] text-[#1E293B] dark:text-white">ACTIVE</option>
                             <option value="INACTIVE" className="bg-white dark:bg-[#122529] text-[#1E293B] dark:text-white">INACTIVE</option>
                         </select>
@@ -250,7 +261,7 @@ export const CustomerListPage: React.FC = () => {
                                     {renderSortHeader("PHONE NUMBER", "phone")}
                                     {renderSortHeader("CREATED", "createdAt")}
                                     <th className="py-3.5 px-5 text-center">STATUS</th>
-                                    <th className="py-3.5 px-5 text-center">ACTIONS</th>
+                                    {hasAnyCustomerAction && <th className="py-3.5 px-5 text-center">ACTIONS</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#E5E0D8]/60 dark:divide-[#254C54] text-[#1E293B] dark:text-slate-200">
@@ -290,10 +301,10 @@ export const CustomerListPage: React.FC = () => {
                                             <td className="py-3.5 px-5 text-center text-[#64748B] dark:text-slate-400 text-[11px]">
                                                 {cust.createdAt
                                                     ? new Date(cust.createdAt).toLocaleDateString("en-US", {
-                                                          month: "short",
-                                                          day: "numeric",
-                                                          year: "numeric",
-                                                      })
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                    })
                                                     : "N/A"}
                                             </td>
 
@@ -307,11 +318,10 @@ export const CustomerListPage: React.FC = () => {
                                                         })
                                                     }
                                                     disabled={toggleStatusMutation.isPending}
-                                                    className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer mx-auto ${
-                                                        isCurrentActive
-                                                            ? "bg-[#164E50] dark:bg-teal-500 justify-end"
-                                                            : "bg-slate-300 dark:bg-slate-700 justify-start"
-                                                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                                                    className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer mx-auto ${isCurrentActive
+                                                        ? "bg-[#164E50] dark:bg-teal-500 justify-end"
+                                                        : "bg-slate-300 dark:bg-slate-700 justify-start"
+                                                        } disabled:opacity-40 disabled:cursor-not-allowed`}
                                                     title={`Click to turn ${isCurrentActive ? "OFF" : "ON"}`}
                                                 >
                                                     <span className="bg-white w-4 h-4 rounded-full shadow-md transition-transform" />
@@ -319,36 +329,44 @@ export const CustomerListPage: React.FC = () => {
                                             </td>
 
                                             {/* ACTIONS */}
-                                            <td className="py-3.5 px-5 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    <button
-                                                        onClick={() => navigate(`/admin/customers/${customerId}`)}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
-                                                        title="View Customer Profile"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                    </button>
+                                            {hasAnyCustomerAction && (
+                                                <td className="py-3.5 px-5 text-center">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <PermissionGuard permission={PERMISSIONS.CUSTOMER_VIEW}>
+                                                            <button
+                                                                onClick={() => navigate(`/admin/customers/${customerId}`)}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
+                                                                title="View Customer Profile"
+                                                            >
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
 
-                                                    <button
-                                                        onClick={() => navigate(`/admin/customers/${customerId}/edit`)}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
-                                                        title="Edit Customer"
-                                                    >
-                                                        <Edit2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                        <PermissionGuard permission={PERMISSIONS.CUSTOMER_EDIT}>
+                                                            <button
+                                                                onClick={() => navigate(`/admin/customers/${customerId}/edit`)}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
+                                                                title="Edit Customer"
+                                                            >
+                                                                <Edit2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
 
-                                                    <button
-                                                        onClick={() => {
-                                                            setDeletingCustomerId(customerId);
-                                                            setIsDeleteOpen(true);
-                                                        }}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 transition shadow-2xs cursor-pointer"
-                                                        title="Delete Customer"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                                        <PermissionGuard permission={PERMISSIONS.CUSTOMER_DELETE}>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setDeletingCustomerId(customerId);
+                                                                    setIsDeleteOpen(true);
+                                                                }}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 transition shadow-2xs cursor-pointer"
+                                                                title="Delete Customer"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                     );
                                 })}

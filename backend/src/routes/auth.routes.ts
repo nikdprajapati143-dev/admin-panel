@@ -18,7 +18,7 @@ const authController = new AuthController();
 // Public Auth Endpoints
 router.post(
     "/auth/login",
-    authLimiter,
+    // authLimiter,
     validate(loginSchema),
     authController.login,
 );

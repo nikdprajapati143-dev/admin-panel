@@ -5,13 +5,12 @@ import {
     Users,
     Shield,
     UserCheck,
-    User,
-    KeyRound,
-    LogOut,
     Key,
     ChevronRight,
     X,
 } from "lucide-react";
+import { usePermission } from "../hooks/usePermission.js";
+import { PERMISSIONS } from "../constants/permissions.js";
 
 interface SidebarProps {
     isMobileOpen?: boolean;
@@ -25,39 +24,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onLogout,
 }) => {
     const location = useLocation();
+    const { hasPermission } = usePermission();
 
     const navItems = [
         {
             label: "Overview",
             path: "/admin/dashboard",
             icon: LayoutDashboard,
+            permission: undefined, // Available to all authenticated users
         },
         {
             label: "Admins",
             path: "/admin/admins",
             icon: Users,
+            permissions: [PERMISSIONS.ADMIN_LIST, PERMISSIONS.ADMIN_VIEW],
         },
         {
             label: "Roles",
             path: "/admin/roles",
             icon: Shield,
+            permissions: [PERMISSIONS.ROLE_LIST, PERMISSIONS.ROLE_VIEW],
         },
         {
             label: "Customers",
             path: "/admin/customers",
             icon: UserCheck,
+            permissions: [PERMISSIONS.CUSTOMER_LIST, PERMISSIONS.CUSTOMER_VIEW],
         },
-        // {
-        //     label: "Profile",
-        //     path: "/admin/profile",
-        //     icon: User,
-        // },
-        // {
-        //     label: "Change Password",
-        //     path: "/admin/change-password",
-        //     icon: KeyRound,
-        // },
     ];
+
+    const visibleNavItems = navItems.filter((item) => {
+        if (!item.permissions) return true;
+        return item.permissions.some((p) => hasPermission(p));
+    });
 
     const sidebarContent = (
         <div className="flex flex-col h-full bg-[#164E50] dark:bg-[#0E1D21] text-white p-6 justify-between select-none">
@@ -92,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Navigation Links */}
                 <nav className="space-y-1.5">
-                    {navItems.map((item) => {
+                    {visibleNavItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
@@ -116,20 +115,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     })}
                 </nav>
             </div>
-
-            {/* Logout Action */}
-            {/* <div className="pt-6 border-t border-white/10 dark:border-[#1F3E45]">
-                <button
-                    onClick={() => {
-                        if (onLogout) onLogout();
-                        if (onCloseMobile) onCloseMobile();
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-200 hover:text-white hover:bg-red-500/20 transition-all cursor-pointer"
-                >
-                    <LogOut className="w-4 h-4 text-red-300" />
-                    <span>Logout</span>
-                </button>
-            </div> */}
         </div>
     );
 

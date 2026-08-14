@@ -20,7 +20,10 @@ import {
 import { toast } from "sonner";
 import { apiClient } from "../../api/client.js";
 import { DeleteConfirmModal } from "../../components/common/DeleteConfirmModal.js";
+import { PermissionGuard } from "../../components/PermissionGuard.js";
+import { PERMISSIONS } from "../../constants/permissions.js";
 import { useAuthStore } from "../../store/authStore.js";
+import { usePermission } from "../../hooks/usePermission.js";
 import { getAvatarUrl } from "../../components/admins/AdminForm.js";
 import type { AdminUser, ApiResponse } from "../../types/auth.js";
 
@@ -28,6 +31,12 @@ export const AdminListPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { admin: currentAdmin } = useAuthStore();
+    const { hasPermission } = usePermission();
+
+    const canViewAdmin = hasPermission(PERMISSIONS.ADMIN_VIEW);
+    const canEditAdmin = hasPermission(PERMISSIONS.ADMIN_EDIT);
+    const canDeleteAdmin = hasPermission(PERMISSIONS.ADMIN_DELETE);
+    const hasAnyAdminAction = canViewAdmin || canEditAdmin || canDeleteAdmin;
 
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -182,13 +191,15 @@ export const AdminListPage: React.FC = () => {
                     </h2>
                 </div>
 
-                <Link
-                    to="/admin/admins/create"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#164E50] hover:bg-[#113E40] text-white font-semibold text-xs transition shadow-md w-fit cursor-pointer shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>Create Admin</span>
-                </Link>
+                <PermissionGuard permission={PERMISSIONS.ADMIN_CREATE}>
+                    <Link
+                        to="/admin/admins/create"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#164E50] hover:bg-[#113E40] text-white font-semibold text-xs transition shadow-md w-fit cursor-pointer shrink-0"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Create Admin</span>
+                    </Link>
+                </PermissionGuard>
             </div>
 
             {/* SINGLE UNIFIED WHITE CARD */}
@@ -239,7 +250,7 @@ export const AdminListPage: React.FC = () => {
                                     {renderSortHeader("ROLE", "role")}
                                     {renderSortHeader("CREATED", "createdAt")}
                                     <th className="py-3.5 px-5 text-center">STATUS</th>
-                                    <th className="py-3.5 px-5 text-center">ACTIONS</th>
+                                    {hasAnyAdminAction && <th className="py-3.5 px-5 text-center">ACTIONS</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#E5E0D8]/60 dark:divide-[#254C54] text-[#1E293B] dark:text-slate-200">
@@ -328,37 +339,45 @@ export const AdminListPage: React.FC = () => {
                                             </td>
 
                                             {/* ACTIONS */}
-                                            <td className="py-3.5 px-5 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    <button
-                                                        onClick={() => navigate(`/admin/admins/${adminId}`)}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
-                                                        title="View Admin Details"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                    </button>
+                                            {hasAnyAdminAction && (
+                                                <td className="py-3.5 px-5 text-center">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <PermissionGuard permission={PERMISSIONS.ADMIN_VIEW}>
+                                                            <button
+                                                                onClick={() => navigate(`/admin/admins/${adminId}`)}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
+                                                                title="View Admin Details"
+                                                            >
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
 
-                                                    <button
-                                                        onClick={() => navigate(`/admin/admins/${adminId}/edit`)}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
-                                                        title="Edit Admin"
-                                                    >
-                                                        <Edit2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                        <PermissionGuard permission={PERMISSIONS.ADMIN_EDIT}>
+                                                            <button
+                                                                onClick={() => navigate(`/admin/admins/${adminId}/edit`)}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-[#164E50] dark:hover:text-teal-300 hover:border-[#164E50] transition shadow-2xs cursor-pointer"
+                                                                title="Edit Admin"
+                                                            >
+                                                                <Edit2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
 
-                                                    <button
-                                                        onClick={() => {
-                                                            setDeletingAdminId(adminId);
-                                                            setIsDeleteOpen(true);
-                                                        }}
-                                                        disabled={isSelf}
-                                                        className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 disabled:opacity-40 disabled:hover:text-slate-600 transition shadow-2xs cursor-pointer"
-                                                        title={isSelf ? "You cannot delete your own account" : "Delete Admin"}
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                                        <PermissionGuard permission={PERMISSIONS.ADMIN_DELETE}>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setDeletingAdminId(adminId);
+                                                                    setIsDeleteOpen(true);
+                                                                }}
+                                                                disabled={isSelf}
+                                                                className="p-1.5 rounded-lg border border-[#E5E0D8] dark:border-[#254C54] bg-white dark:bg-[#122529] text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 disabled:opacity-40 disabled:hover:text-slate-600 transition shadow-2xs cursor-pointer"
+                                                                title={isSelf ? "You cannot delete your own account" : "Delete Admin"}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </PermissionGuard>
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                     );
                                 })}

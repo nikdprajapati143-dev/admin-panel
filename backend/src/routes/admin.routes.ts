@@ -28,14 +28,14 @@ router.post(
 
 router.get(
     "/admins",
-    authorizePermissions(PERMISSIONS.ADMIN_READ),
+    authorizePermissions(PERMISSIONS.ADMIN_READ, PERMISSIONS.ADMIN_LIST),
     validate(paginationQuerySchema),
     adminController.getAllAdmins,
 );
 
 router.get(
     "/admins/:id",
-    authorizePermissions(PERMISSIONS.ADMIN_READ),
+    authorizePermissions(PERMISSIONS.ADMIN_READ, PERMISSIONS.ADMIN_LIST),
     validate(idParamSchema),
     adminController.getAdminById,
 );

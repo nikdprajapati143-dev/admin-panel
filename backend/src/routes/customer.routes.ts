@@ -29,14 +29,14 @@ router.post(
 
 router.get(
     "/customers",
-    authorizePermissions(PERMISSIONS.CUSTOMER_READ),
+    authorizePermissions(PERMISSIONS.CUSTOMER_READ, PERMISSIONS.CUSTOMER_LIST),
     validate(customerQuerySchema),
     customerController.getAllCustomers,
 );
 
 router.get(
     "/customers/:id",
-    authorizePermissions(PERMISSIONS.CUSTOMER_READ),
+    authorizePermissions(PERMISSIONS.CUSTOMER_READ, PERMISSIONS.CUSTOMER_LIST),
     validate(idParamSchema),
     customerController.getCustomerById,
 );

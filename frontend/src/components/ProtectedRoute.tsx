@@ -2,9 +2,18 @@ import React, { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader2, Key } from "lucide-react";
 import { useAuthStore } from "../store/authStore.js";
+import { hasPermission } from "../utils/permission.js";
 
-export const ProtectedRoute: React.FC = () => {
-    const { isAuthenticated, isLoading, checkAuthStatus } = useAuthStore();
+interface ProtectedRouteProps {
+    requiredPermission?: string;
+    children?: React.ReactNode;
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+    requiredPermission,
+    children,
+}) => {
+    const { admin, isAuthenticated, isLoading, checkAuthStatus } = useAuthStore();
 
     useEffect(() => {
         checkAuthStatus();
@@ -33,5 +42,9 @@ export const ProtectedRoute: React.FC = () => {
         return <Navigate to="/admin/login" replace />;
     }
 
-    return <Outlet />;
+    if (requiredPermission && !hasPermission(admin, requiredPermission)) {
+        return <Navigate to="/admin/403" replace />;
+    }
+
+    return children ? <>{children}</> : <Outlet />;
 };

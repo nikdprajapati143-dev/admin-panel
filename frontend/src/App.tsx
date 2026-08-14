@@ -24,6 +24,8 @@ import { RoleListPage } from "./pages/roles/RoleListPage.js";
 import { RoleCreatePage } from "./pages/roles/RoleCreatePage.js";
 import { RoleEditPage } from "./pages/roles/RoleEditPage.js";
 import { NotFoundPage } from "./pages/common/NotFoundPage.js";
+import { UnauthorizedPage } from "./pages/common/UnauthorizedPage.js";
+import { PERMISSIONS } from "./constants/permissions.js";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -58,19 +60,48 @@ function App() {
                         <Route element={<ProtectedRoute />}>
                             <Route path="/admin" element={<AdminLayout />}>
                                 <Route path="dashboard" element={<DashboardPage />} />
-                                <Route path="admins" element={<AdminListPage />} />
-                                <Route path="admins/create" element={<AdminCreatePage />} />
-                                <Route path="admins/:id" element={<AdminDetailPage />} />
-                                <Route path="admins/:id/edit" element={<AdminEditPage />} />
-                                <Route path="customers" element={<CustomerListPage />} />
-                                <Route path="customers/create" element={<CustomerCreatePage />} />
-                                <Route path="customers/:id" element={<CustomerDetailPage />} />
-                                <Route path="customers/:id/edit" element={<CustomerEditPage />} />
-                                <Route path="roles" element={<RoleListPage />} />
-                                <Route path="roles/create" element={<RoleCreatePage />} />
-                                <Route path="roles/:id/edit" element={<RoleEditPage />} />
+                                <Route path="403" element={<UnauthorizedPage />} />
                                 <Route path="profile" element={<ProfilePage />} />
                                 <Route path="change-password" element={<ChangePasswordPage />} />
+
+                                 {/* Admins Routes */}
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ADMIN_LIST} />}>
+                                    <Route path="admins" element={<AdminListPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ADMIN_VIEW} />}>
+                                    <Route path="admins/:id" element={<AdminDetailPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ADMIN_CREATE} />}>
+                                    <Route path="admins/create" element={<AdminCreatePage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ADMIN_EDIT} />}>
+                                    <Route path="admins/:id/edit" element={<AdminEditPage />} />
+                                </Route>
+
+                                {/* Customers Routes */}
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.CUSTOMER_LIST} />}>
+                                    <Route path="customers" element={<CustomerListPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.CUSTOMER_VIEW} />}>
+                                    <Route path="customers/:id" element={<CustomerDetailPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.CUSTOMER_CREATE} />}>
+                                    <Route path="customers/create" element={<CustomerCreatePage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.CUSTOMER_EDIT} />}>
+                                    <Route path="customers/:id/edit" element={<CustomerEditPage />} />
+                                </Route>
+
+                                {/* Roles Routes */}
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ROLE_LIST} />}>
+                                    <Route path="roles" element={<RoleListPage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ROLE_CREATE} />}>
+                                    <Route path="roles/create" element={<RoleCreatePage />} />
+                                </Route>
+                                <Route element={<ProtectedRoute requiredPermission={PERMISSIONS.ROLE_EDIT} />}>
+                                    <Route path="roles/:id/edit" element={<RoleEditPage />} />
+                                </Route>
                             </Route>
                         </Route>
 
